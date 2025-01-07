@@ -1,0 +1,57 @@
+# Classe Navire
+class Navire:
+    def __init__(self, taille):
+        self.taille = taille  # Taille du navire
+        self.positions = []   # Liste des coordonnées occupées par le navire
+        self.touchees = []    # Liste des coordonnées touchées
+
+    def est_coule(self):
+        """Vérifie si le navire est entièrement coulé."""
+        return set(self.positions) == set(self.touchees)
+
+# Classe Plateau
+class Plateau:
+    def __init__(self):
+        self.grille = [["." for _ in range(10)] for _ in range(10)]  # Grille vide 10x10
+        self.navires = []                                            # Liste des navires placés
+
+    def ajouter_navire(self, navire, positions):
+        """Ajoute un navire à la grille, si possible."""
+        for x, y in positions:
+            if self.grille[x][y] != ".":  # Vérifie que la position est libre
+                return False              # Échec de placement
+        navire.positions = positions      # Associe les positions au navire
+        self.navires.append(navire)       # Ajoute le navire à la liste
+        for x, y in positions:
+            self.grille[x][y] = "N"       # Marque la position sur la grille
+        return True
+
+    def afficher_grille(self):
+        """Affiche la grille dans la console (pour tester)."""
+        for ligne in self.grille:
+            print(" ".join(ligne))
+
+# Classe Joueur
+class Joueur:
+    def __init__(self, nom):
+        self.nom = nom            # Nom du joueur
+        self.plateau = Plateau()  # Plateau du joueur
+
+    def tirer(self, x, y, plateau_adverse):
+        """Effectue un tir sur le plateau adverse."""
+        if plateau_adverse.grille[x][y] == "N":
+            plateau_adverse.grille[x][y] = "X"          # Marque un tir touché
+            print(f"{self.nom} a touché un navire !")
+            for navire in plateau_adverse.navires:
+                if (x, y) in navire.positions:
+                    navire.touchees.append((x, y))
+                    if navire.est_coule():
+                        print(f"Le navire est coulé")
+            return True
+        elif plateau_adverse.grille[x][y] == ".":
+            plateau_adverse.grille[x][y] = "O"          # Marque un tir manqué
+            print(f"{self.nom} a manqué sa cible.")
+            return False
+        else:
+            print(f"{self.nom} a déjà tiré ici.")
+            return False
