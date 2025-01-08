@@ -1,0 +1,59 @@
+import tkinter as tk
+
+# Fonction créer une grille
+def creer_grille(frame, grille, label, action):
+    # Ajouter un titre
+    titre = tk.Label(frame, text=f"Grille {label}", bg=frame["bg"], font=("Arial", 14, "bold"))
+    titre.grid(row=0, column=0, columnspan=10, pady=10)
+
+    # Boucle pour créer une grille 10x10
+    for x in range(10):  # Parcourir les lignes
+        ligne = []  # Une ligne de boutons
+        for y in range(10):  # Parcourir les colonnes
+            bouton = tk.Button(
+                frame,
+                text=" ",  # Texte initial
+                width=3,
+                height=1
+            )
+            bouton.grid(row=x + 1, column=y, padx=2, pady=2)  # Positionner le bouton
+            bouton.config(command=lambda b=bouton, i=x, j=y: action(b, i, j))  # action au bouton
+            ligne.append(bouton)  # Ajouter le bouton à la ligne
+        grille.append(ligne)  # Ajouter la ligne à la grille
+
+#lors du clic sur un bouton
+def bouton_clique(bouton, x, y):
+    if bouton["text"] == " ":  # Si le bouton est vide
+        bouton.config(text="X", bg="blue")  # Marquer le bouton d'un "X"
+        print(f"Clique détecté sur la case ({x}, {y})")
+    else:
+        print(f"La case ({x}, {y}) a déjà été cliquée")
+
+# Fonction principale pour créer l'interface
+def interface_principale():
+    # Créer la fenêtre principale
+    root = tk.Tk()
+    root.title("Bataille Navale")
+    root.geometry("800x600")  # Taille de la fenêtre
+
+    # Créer deux cadres pour les grilles
+    frame_joueur = tk.Frame(root, bg="lightblue", width=400, height=500)
+    frame_ordinateur = tk.Frame(root, bg="lightgreen", width=400, height=500)
+
+    # Positionner les cadres
+    frame_joueur.grid(row=0, column=0, padx=20, pady=20)
+    frame_ordinateur.grid(row=0, column=1, padx=20, pady=20)
+
+    # Créer les grilles
+    grille_joueur = []  # Grille du joueur
+    grille_ordinateur = []  # Grille de l'ordinateur
+
+    creer_grille(frame_joueur, grille_joueur, "Joueur", bouton_clique)  # Créer la grille du joueur
+    creer_grille(frame_ordinateur, grille_ordinateur, "Ordinateur", bouton_clique)  # Créer la grille de l'ordinateur
+
+    # Démarrer la boucle principale
+    root.mainloop()
+
+# Lancer l'application
+if __name__ == "__main__":
+    interface_principale()
