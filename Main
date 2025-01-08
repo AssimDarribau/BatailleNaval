@@ -1,57 +1,92 @@
-# Classe Navire
+import tkinter as tk
+
 class Navire:
     def __init__(self, taille):
-        self.taille = taille  # Taille du navire
-        self.positions = []   # Liste des coordonnées occupées par le navire
-        self.touchees = []    # Liste des coordonnées touchées
+        self.taille = taille
+        self.positions = []
+        self.touchees = []
 
     def est_coule(self):
-        """Vérifie si le navire est entièrement coulé."""
-        return set(self.positions) == set(self.touchees)
+        return all(pos in self.touchees for pos in self.positions)
 
-# Classe Plateau
 class Plateau:
     def __init__(self):
-        self.grille = [["." for _ in range(10)] for _ in range(10)]  # Grille vide 10x10
-        self.navires = []                                            # Liste des navires placés
+        self.grille = [["." for _ in range(10)] for _ in range(10)]
 
     def ajouter_navire(self, navire, positions):
-        """Ajoute un navire à la grille, si possible."""
         for x, y in positions:
-            if self.grille[x][y] != ".":  # Vérifie que la position est libre
-                return False              # Échec de placement
-        navire.positions = positions      # Associe les positions au navire
-        self.navires.append(navire)       # Ajoute le navire à la liste
+            if self.grille[x][y] != ".":
+                return False
+        navire.positions = positions
         for x, y in positions:
-            self.grille[x][y] = "N"       # Marque la position sur la grille
+            self.grille[x][y] = "N"
         return True
 
-    def afficher_grille(self):
-        """Affiche la grille dans la console (pour tester)."""
-        for ligne in self.grille:
-            print(" ".join(ligne))
+    def verifier_tir(self, x, y):
+        if self.grille[x][y] == "N":
+            self.grille[x][y] = "X"
+            return True
+        elif self.grille[x][y] == ".":
+            self.grille[x][y] = "O"
+            return False
+        return None
 
-# Classe Joueur
 class Joueur:
     def __init__(self, nom):
-        self.nom = nom            # Nom du joueur
-        self.plateau = Plateau()  # Plateau du joueur
+        self.nom = nom
+        self.plateau = Plateau()
 
     def tirer(self, x, y, plateau_adverse):
-        """Effectue un tir sur le plateau adverse."""
-        if plateau_adverse.grille[x][y] == "N":
-            plateau_adverse.grille[x][y] = "X"          # Marque un tir touché
-            print(f"{self.nom} a touché un navire !")
-            for navire in plateau_adverse.navires:
-                if (x, y) in navire.positions:
-                    navire.touchees.append((x, y))
-                    if navire.est_coule():
-                        print(f"Le navire est coulé")
-            return True
-        elif plateau_adverse.grille[x][y] == ".":
-            plateau_adverse.grille[x][y] = "O"          # Marque un tir manqué
-            print(f"{self.nom} a manqué sa cible.")
-            return False
+        resultat = plateau_adverse.verifier_tir(x, y)
+        if resultat:
+            print(f"{self.nom} a touché un navire en ({x}, {y})")
+        elif resultat is False:
+            print(f"{self.nom} a manqué en ({x}, {y})")
         else:
-            print(f"{self.nom} a déjà tiré ici.")
-            return False
+            print(f"{self.nom} a déjà tiré ici ({x}, {y})")
+
+class InterfaceBatailleNavale:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Bataille Navale")
+        self.root.geometry("500x500")
+
+        self.joueur = Joueur("Joueur")
+        self.ordinateur = Joueur("Ordinateur")
+
+        self.frame_joueur = tk.Frame(root, bg="lightblue")
+        self.frame_ordinateur = tk.Frame(root, bg="lightgreen")
+        self.frame_joueur.pack(side=tk.LEFT, padx=20, pady=20)
+        self.frame_ordinateur.pack(side=tk.RIGHT, padx=20, pady=20)
+
+        self.grille_joueur = []
+        self.grille_ordinateur = []
+
+        self.creer_grille(self.frame_joueur, self.grille_joueur, "Joueur")
+        self.creer_grille(self.frame_ordinateur, self.grille_ordinateur, "Ordinateur")
+
+    def creer_grille(self, frame, grille, label):
+        tk.Label(frame, text=f"Grille {label}", bg=frame["bg"]).pack()
+        for x in range(5):
+            ligne = []
+            for y in range(5):
+                bouton = tk.Button(
+                    frame, text=" ", width=3, height=1,
+                    command=lambda x=x, y=y: self.action_case(x, y, label)
+                )
+                bouton.grid(row=x, column=y, padx=2, pady=2)
+                ligne.append(bouton)
+            grille.append(ligne)
+
+    def action_case(self, x, y, label):
+        if label == "Joueur":
+            print(f"Joueur a cliqué sur ({x}, {y})")
+            self.grille_joueur[x][y].config(text="X", bg="blue")
+        else:
+            print(f"Ordinateur a cliqué sur ({x}, {y})")
+            self.grille_ordinateur[x][y].config(text="X", bg="red")
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = InterfaceBatailleNavale(root)
+    root.mainloop()
