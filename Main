@@ -1,113 +1,59 @@
 import tkinter as tk
 
-# Classe pour les navires
-class Navire:
-    def __init__(self, taille):
-        self.taille = taille  # Taille du navire (nombre de cases qu'il occupe) *Variable
-        self.positions = []   # Liste des coordonnées occupées par le navire
-        self.touchees = []    # Liste des coordonnées touchées
+# Fonction créer une grille
+def creer_grille(frame, grille, label, action):
+    # Ajouter un titre
+    titre = tk.Label(frame, text=f"Grille {label}", bg=frame["bg"], font=("Arial", 14, "bold"))
+    titre.grid(row=0, column=0, columnspan=10, pady=10)
 
-    def est_coule(self):
-        # Retourne True si toutes les positions du navire sont touchées
-        return all(pos in self.touchees for pos in self.positions)
+    # Boucle pour créer une grille 10x10
+    for x in range(10):  # Parcourir les lignes
+        ligne = []  # Une ligne de boutons
+        for y in range(10):  # Parcourir les colonnes
+            bouton = tk.Button(
+                frame,
+                text=" ",  # Texte initial
+                width=3,
+                height=1
+            )
+            bouton.grid(row=x + 1, column=y, padx=2, pady=2)  # Positionner le bouton
+            bouton.config(command=lambda b=bouton, i=x, j=y: action(b, i, j))  # action au bouton
+            ligne.append(bouton)  # Ajouter le bouton à la ligne
+        grille.append(ligne)  # Ajouter la ligne à la grille
 
-# Classe représentant un plateau de jeu
-class Plateau:
-    def __init__(self):
-        # Initialise un plateau 10x10
-        self.grille = [["." for _ in range(10)] for _ in range(10)]
+#lors du clic sur un bouton
+def bouton_clique(bouton, x, y):
+    if bouton["text"] == " ":  # Si le bouton est vide
+        bouton.config(text="X", bg="blue")  # Marquer le bouton d'un "X"
+        print(f"Clique détecté sur la case ({x}, {y})")
+    else:
+        print(f"La case ({x}, {y}) a déjà été cliquée")
 
-    def ajouter_navire(self, navire, positions):
-        # Ajoute un navire aux positions spécifiées
-        for x, y in positions:
-            if self.grille[x][y] != ".":
-                return False  # Retourne False si une position est déjà occupée
-        navire.positions = positions
-        for x, y in positions:
-            self.grille[x][y] = "N"  # Marqué les positions sur la grille
-        return True
-
-    def verifier_tir(self, x, y):
-        # Vérifie si un tir touche un navire ou non
-        if self.grille[x][y] == "N":
-            self.grille[x][y] = "X"  # Navire touché
-            return True
-        elif self.grille[x][y] == ".":
-            self.grille[x][y] = "O"  # Tir manqué
-            return False
-        return None  # Case déjà tirée
-
-# Classe pour les joueurs
-class Joueur:
-    def __init__(self, nom):
-        self.nom = nom
-        self.plateau = Plateau()
-
-    def tirer(self, x, y, plateau_adverse):
-        # Effectue un tir sur le plateau adverse
-        resultat = plateau_adverse.verifier_tir(x, y)
-        if resultat:
-            print(f"{self.nom} a touché un navire en ({x}, {y})")
-        elif resultat is False:
-            print(f"{self.nom} a manqué en ({x}, {y})")
-        else:
-            print(f"{self.nom} a déjà tiré ici ({x}, {y})")
-
-# Classe principale pour gérer l'interface utilisateur
-class InterfaceBatailleNavale:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Bataille Navale")
-        self.root.geometry("500x500")  # Taille de la fenêtre
-
-        # Joueurs / ordinateur :
-        self.joueur = Joueur("Joueur")
-        self.ordinateur = Joueur("Ordinateur")
-
-        # Conteneurs pour les boutons des grilles
-        self.grille_joueur = []
-        self.grille_ordinateur = []
-
-
-        self.creer_grille(self.frame_joueur, self.grille_joueur, "Joueur")
-        self.creer_grille(self.frame_ordinateur, self.grille_ordinateur, "Ordinateur")
-
-    def creer_grille(self, frame, grille, label):
-        """
-
-
-        """
-        tk.Label(frame, text=f"Grille {label}", bg=frame["bg"]).pack()
-        for x in range(10):  # Parcourt les lignes
-            ligne = []
-            for y in range(10):  # Parcourt les colonnes
-                # Chaque bouton est relié à une action via `lambda`
-                bouton = tk.Button(
-                    frame,
-                    text=" ",  # Texte initial du bouton
-                    width=3,
-                    height=1,
-                    command=lambda x=x, y=y: self.action_case(x, y, label)
-                )
-                # Place le bouton dans la grille avec `grid`
-                bouton.grid(row=x, column=y, padx=2, pady=2)
-                ligne.append(bouton)  # Ajoute le bouton à la ligne
-            grille.append(ligne)  # Ajoute la ligne complète à la grille
-
-    def action_case(self, x, y, label):
-        """
-
-
-
-        """
-        if label == "Joueur":
-            print(f"Joueur a cliqué sur ({x}, {y})")
-            self.grille_joueur[x][y].config(text="X", bg="blue")
-        elif label == "Ordinateur":
-            print(f"Ordinateur a cliqué sur ({x}, {y})")
-            self.grille_ordinateur[x][y].config(text="X", bg="red")
-
-if __name__ == "__main__":
+# Fonction principale pour créer l'interface
+def interface_principale():
+    # Créer la fenêtre principale
     root = tk.Tk()
-    app = InterfaceBatailleNavale(root)
+    root.title("Bataille Navale")
+    root.geometry("800x600")  # Taille de la fenêtre
+
+    # Créer deux cadres pour les grilles
+    frame_joueur = tk.Frame(root, bg="lightblue", width=400, height=500)
+    frame_ordinateur = tk.Frame(root, bg="lightgreen", width=400, height=500)
+
+    # Positionner les cadres
+    frame_joueur.grid(row=0, column=0, padx=20, pady=20)
+    frame_ordinateur.grid(row=0, column=1, padx=20, pady=20)
+
+    # Créer les grilles
+    grille_joueur = []  # Grille du joueur
+    grille_ordinateur = []  # Grille de l'ordinateur
+
+    creer_grille(frame_joueur, grille_joueur, "Joueur", bouton_clique)  # Créer la grille du joueur
+    creer_grille(frame_ordinateur, grille_ordinateur, "Ordinateur", bouton_clique)  # Créer la grille de l'ordinateur
+
+    # Démarrer la boucle principale
     root.mainloop()
+
+# Lancer l'application
+if __name__ == "__main__":
+    interface_principale()
