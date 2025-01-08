@@ -1,42 +1,50 @@
 import tkinter as tk
 
+# Classe pour les navires
 class Navire:
     def __init__(self, taille):
-        self.taille = taille
-        self.positions = []
-        self.touchees = []
+        self.taille = taille  # Taille du navire (nombre de cases qu'il occupe) *Variable
+        self.positions = []   # Liste des coordonnées occupées par le navire
+        self.touchees = []    # Liste des coordonnées touchées
 
     def est_coule(self):
+        # Retourne True si toutes les positions du navire sont touchées
         return all(pos in self.touchees for pos in self.positions)
 
+# Classe représentant un plateau de jeu
 class Plateau:
     def __init__(self):
+        # Initialise un plateau 10x10
         self.grille = [["." for _ in range(10)] for _ in range(10)]
 
     def ajouter_navire(self, navire, positions):
+        # Ajoute un navire aux positions spécifiées
         for x, y in positions:
             if self.grille[x][y] != ".":
-                return False
+                return False  # Retourne False si une position est déjà occupée
         navire.positions = positions
         for x, y in positions:
-            self.grille[x][y] = "N"
+            self.grille[x][y] = "N"  # Marqué les positions sur la grille
         return True
 
     def verifier_tir(self, x, y):
+        # Vérifie si un tir touche un navire ou non
         if self.grille[x][y] == "N":
-            self.grille[x][y] = "X"
+            self.grille[x][y] = "X"  # Navire touché
             return True
         elif self.grille[x][y] == ".":
-            self.grille[x][y] = "O"
+            self.grille[x][y] = "O"  # Tir manqué
             return False
-        return None
+        return None  # Case déjà tirée
 
+# Classe pour les joueurs
 class Joueur:
     def __init__(self, nom):
         self.nom = nom
         self.plateau = Plateau()
 
     def tirer(self, x, y, plateau_adverse):
+        # Effectue un tir sur le plateau adverse
         resultat = plateau_adverse.verifier_tir(x, y)
         if resultat:
             print(f"{self.nom} a touché un navire en ({x}, {y})")
@@ -45,44 +53,57 @@ class Joueur:
         else:
             print(f"{self.nom} a déjà tiré ici ({x}, {y})")
 
+# Classe principale pour gérer l'interface utilisateur
 class InterfaceBatailleNavale:
     def __init__(self, root):
         self.root = root
         self.root.title("Bataille Navale")
-        self.root.geometry("500x500")
+        self.root.geometry("500x500")  # Taille de la fenêtre
 
+        # Joueurs / ordinateur :
         self.joueur = Joueur("Joueur")
         self.ordinateur = Joueur("Ordinateur")
 
-        self.frame_joueur = tk.Frame(root, bg="lightblue")
-        self.frame_ordinateur = tk.Frame(root, bg="lightgreen")
-        self.frame_joueur.pack(side=tk.LEFT, padx=20, pady=20)
-        self.frame_ordinateur.pack(side=tk.RIGHT, padx=20, pady=20)
-
+        # Conteneurs pour les boutons des grilles
         self.grille_joueur = []
         self.grille_ordinateur = []
+
 
         self.creer_grille(self.frame_joueur, self.grille_joueur, "Joueur")
         self.creer_grille(self.frame_ordinateur, self.grille_ordinateur, "Ordinateur")
 
     def creer_grille(self, frame, grille, label):
+        """
+
+
+        """
         tk.Label(frame, text=f"Grille {label}", bg=frame["bg"]).pack()
-        for x in range(5):
+        for x in range(10):  # Parcourt les lignes
             ligne = []
-            for y in range(5):
+            for y in range(10):  # Parcourt les colonnes
+                # Chaque bouton est relié à une action via `lambda`
                 bouton = tk.Button(
-                    frame, text=" ", width=3, height=1,
+                    frame,
+                    text=" ",  # Texte initial du bouton
+                    width=3,
+                    height=1,
                     command=lambda x=x, y=y: self.action_case(x, y, label)
                 )
+                # Place le bouton dans la grille avec `grid`
                 bouton.grid(row=x, column=y, padx=2, pady=2)
-                ligne.append(bouton)
-            grille.append(ligne)
+                ligne.append(bouton)  # Ajoute le bouton à la ligne
+            grille.append(ligne)  # Ajoute la ligne complète à la grille
 
     def action_case(self, x, y, label):
+        """
+
+
+
+        """
         if label == "Joueur":
             print(f"Joueur a cliqué sur ({x}, {y})")
             self.grille_joueur[x][y].config(text="X", bg="blue")
-        else:
+        elif label == "Ordinateur":
             print(f"Ordinateur a cliqué sur ({x}, {y})")
             self.grille_ordinateur[x][y].config(text="X", bg="red")
 
